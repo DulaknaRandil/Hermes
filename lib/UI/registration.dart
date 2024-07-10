@@ -1,10 +1,13 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:loading_icon_button/loading_icon_button.dart';
+import 'package:country_code_picker/country_code_picker.dart';
+import 'homepage.dart'; // Update the import statement according to your project structure
 
 class RegistrationScreen extends StatefulWidget {
   final Function()? onTap;
@@ -26,6 +29,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String _password = '';
   String _confirmPassword = '';
   String _phoneNumber = '';
+  bool _isLoading = false; // Track loading state
 
   Future getImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -41,6 +45,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _register() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _email,
@@ -68,11 +76,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'profilePictureUrl': imageUrl,
       });
 
+      setState(() {
+        _isLoading = false;
+      });
+
       // Navigate to the next screen or do whatever you want
-      widget.onTap?.call();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } catch (e) {
       print('Error registering user: $e');
-      // Handle registration errors
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      // Show an error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error registering user: $e'),
+        ),
+      );
     }
   }
 
@@ -99,6 +124,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         backgroundColor: Colors.grey[200],
                         backgroundImage:
                             _image != null ? FileImage(_image) : null,
+                        child: _image == null || _image.path.isEmpty
+                            ? Icon(Icons.account_circle,
+                                size: 100, color: Colors.white)
+                            : null,
                       ),
                       Positioned(
                         bottom: 0,
@@ -194,14 +223,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 },
               ),
               SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _register();
-                  }
-                },
-                child: Text('Register'),
-              ),
+              _isLoading
+                  ? Center(
+                      child: SpinKitCircle(
+                        color: Colors.blue,
+                        size: 50.0,
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          if (_image.path.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please select a profile photo.'),
+                              ),
+                            );
+                          } else {
+                            _register();
+                          }
+                        }
+                      },
+                      child: Text('Register'),
+                    ),
             ],
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hermes/UI/homepage.dart';
+import 'package:hermes/UI/registration.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -42,7 +43,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
       // Navigate to HomePage
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(
+            builder: (context) => RegistrationScreen(
+                  onTap: () {},
+                )),
       );
     } catch (error) {
       // Handle verification error
@@ -74,7 +78,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
           // Navigate to HomePage
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(
+                builder: (context) => RegistrationScreen(
+                      onTap: () {},
+                    )),
           );
         },
         verificationFailed: (FirebaseAuthException e) {
